@@ -29,7 +29,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             last_name=validated_data.get('last_name', ''),
         )
         # Create a Customer instance and associate it with the user
-        customer = Customer(user=user)
+        customer = models.Customer(user=user)
         customer.save()
         return user
 
