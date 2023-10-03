@@ -5,6 +5,7 @@ from rest_framework import status
 from .models import Product,BoughtProduct
 from .serializers import ProductSerializer,UserRegistrationSerializer
 from rest_framework.authtoken.models import Token
+from rest_framework import filters
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate, login
 from rest_framework.permissions import IsAuthenticated
@@ -13,10 +14,14 @@ from rest_framework.permissions import IsAuthenticated
 
 class ProductListCreateView(APIView):
     #serializer_class = serializers.ProductSerializer
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
     def get(self, request):
         products = Product.objects.all()
         serializer = ProductSerializer(products, many=True)
         #print(serializer.data)
+        filter_backends = (filters.SearchFilter,)
+        search_fields = ('name',)
         return Response(serializer.data)
 
     def post(self, request,format=None):
@@ -32,6 +37,7 @@ class ProductListCreateView(APIView):
             product.save()
             #print(serializer.data)
             response_serializer = ProductSerializer(product)
+
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -73,7 +79,7 @@ class UserLoginView(APIView):
         if user:
             login(request, user)
             return redirect('products/')
-            return Response({'message': 'User logged in successfully'}, status=status.HTTP_200_OK)
+            #return Response({'message': 'User logged in successfully'}, status=status.HTTP_200_OK)
 
         return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
