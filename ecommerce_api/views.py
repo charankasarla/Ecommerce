@@ -1,14 +1,17 @@
-from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Product,BoughtProduct
-from .serializers import ProductSerializer,UserRegistrationSerializer
+from .serializers import ProductSerializer, UserRegistrationSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework import filters
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import authenticate, login
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import serializers
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.settings import api_settings
+from django.shortcuts import redirect
 #import request
 # Create your views here.
 
@@ -70,7 +73,8 @@ class UserRegistrationView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserLoginView(APIView):
+''''class UserLoginView(APIView):
+    #serializer_class = serializers.CustomerProfileSerializer
     def post(self, request):
         username = request.data.get('username')
         password = request.data.get('password')
@@ -81,7 +85,7 @@ class UserLoginView(APIView):
             return redirect('products/')
             #return Response({'message': 'User logged in successfully'}, status=status.HTTP_200_OK)
 
-        return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)'''
 
 class ProductSearchView(APIView):
     def get(self, request):
@@ -132,6 +136,20 @@ class BoughtProductListView(APIView):
         # Serialize the products
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class UserLoginApiView(ObtainAuthToken):
+    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+
+        user = authenticate(username=username, password=password)
+        if user:
+            login(request, user)
+            return redirect('../products/')
+            return Response({'message': 'User logged in successfully'}, status=status.HTTP_200_OK)
+
+        return Response({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class LogoutView(APIView):
